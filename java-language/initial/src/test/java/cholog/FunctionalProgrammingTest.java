@@ -2,6 +2,7 @@ package cholog;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
@@ -243,16 +244,16 @@ public class FunctionalProgrammingTest {
                 // TODO: 람다를 활용하여 sum 메서드를 통해 중복을 제거하세요.
                 static int sumAll(final List<Integer> numbers) {
                     return numbers.stream()
-                            .mapToInt(value -> value)
-                            .sum();
+                            .reduce((o1, o2) -> o1 + o2)
+                            .get();
                 }
 
                 // TODO: 람다를 활용하여 sum 메서드를 통해 중복을 제거하세요.
                 static int sumAllEven(final List<Integer> numbers) {
                     return numbers.stream()
-                            .mapToInt(value -> value)
                             .filter(value -> value % 2 == 0)
-                            .sum();
+                            .reduce((o1, o2) -> o1 + o2)
+                            .get();
                 }
 
                 // TODO: 람다를 활용하여 sum 메서드를 통해 중복을 제거하세요.
@@ -265,9 +266,9 @@ public class FunctionalProgrammingTest {
                     }
 
                     return numbers.stream()
-                            .mapToInt(Integer::intValue)
                             .filter(value -> value > 3)
-                            .sum();
+                            .reduce((o1, o2) -> o1 + o2)
+                            .get();
                 }
 
                 private static int sum(
@@ -277,8 +278,8 @@ public class FunctionalProgrammingTest {
                     // TODO: 조건에 맞게 필터링하여 합계를 구하는 기능을 구현하세요.
                     return numbers.stream()
                             .filter(condition)
-                            .mapToInt(Integer::intValue)
-                            .sum();
+                            .reduce((o1, o2) -> o1 + o2)
+                            .get();
                 }
             }
 
@@ -519,9 +520,10 @@ public class FunctionalProgrammingTest {
             final var actual = numbers.stream()
                     .filter(val -> val > 2)
                     .filter(val -> val <= 5)
-                    .mapToInt(val -> val * 2)
+                    .map(val -> val * 2)
                     .filter(val -> val > 7)
-                    .sum();
+                    .reduce((o1, o2) -> o1 + o2)
+                    .get();
 
             assertThat(actual).isEqualTo(expected);
         }
@@ -575,9 +577,15 @@ public class FunctionalProgrammingTest {
             final var contents = Files.readString(Paths.get("src/test/resources/war-and-peace.txt"));
 
             // TODO: 가장 많이 등장하는 단어의 수를 찾으세요.
-             final var words = contents.split("\\P{L}+");
-            final var result = "";
-
+            // Note: 단어가 나올때 마다 카운팅하고 가장 많은 카운트를 가진 단어의 수를 반환한다.
+            final var words = contents.split("\\P{L}+");
+            final var result = Arrays.stream(words)
+                    .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                    .entrySet()
+                    .stream()
+                    .mapToLong(Map.Entry::getValue)
+                    .max()
+                    .orElseThrow();
 
             // -----------------------------------------------------------------
             assertThat(result).isEqualTo(31_949L);
@@ -596,18 +604,22 @@ public class FunctionalProgrammingTest {
             class Fibonacci {
                 // TODO: 기존에 작성된 피보나치 수열을 구하는 코드에서 선언형으로 변경해봅니다. 가능하면 메서드 내부에 세미콜론을 하나만 사용하여 구현해보세요.
                 static int solve(final int n) {
-                    var previous = 0;
-                    var next = 1;
+//                    var previous = 0;
+//                    var next = 1;
+//
+//                    // iterate till limit
+//                    for (int i = 0; i < n; i++) {
+//                        int sum = previous + next;
+//
+//                        previous = next;
+//                        next = sum;
+//                    }
 
-                    // iterate till limit
-                    for (int i = 0; i < n; i++) {
-                        int sum = previous + next;
-
-                        previous = next;
-                        next = sum;
-                    }
-
-                    return previous;
+                    return Stream.iterate(new int[]{0, 1}, values -> new int[]{values[1], values[0] + values[1]})
+                            .limit(n + 1)
+                            .mapToInt(values -> values[0])
+                            .max()
+                            .orElseThrow();
                 }
             }
 
