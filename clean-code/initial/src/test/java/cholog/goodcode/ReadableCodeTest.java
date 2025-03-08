@@ -18,10 +18,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 /**
- * 좋은 코드의 기준은 사람마다 다르지만 대부분의 사람들이 동의하는 몇 가지 기준이 있습니다.
- * 그 기준 중 유지보수성과 확장성은 매우 중요한 기준입니다.
- * 가독성 높은 코드는 유지보수성을 높이고 버그를 줄이는데 도움을 줍니다.
- * 유지보수성과 확장성을 위한 읽기 좋은 코드를 작성하는 방법을 알아봅니다.
+ * 좋은 코드의 기준은 사람마다 다르지만 대부분의 사람들이 동의하는 몇 가지 기준이 있습니다. 그 기준 중 유지보수성과 확장성은 매우 중요한 기준입니다. 가독성 높은 코드는 유지보수성을 높이고 버그를 줄이는데
+ * 도움을 줍니다. 유지보수성과 확장성을 위한 읽기 좋은 코드를 작성하는 방법을 알아봅니다.
  */
 @Nested
 @DisplayName("가독성 높은 코드")
@@ -36,21 +34,21 @@ public class ReadableCodeTest {
     void 어떻게_의도를_전달할_수_있을까() {
         // TODO: 자동차를 움직이고 위치가 변경된다는 의도를 드러낼 수 있는 코드를 작성해보세요.
         class Car {
-            private int p = 0;
+            private int position = 0;
 
             void forward() {
-                if (p > 5) {
+                if (position > 5) {
                     throw new IllegalStateException("최대 5까지만 움직일 수 있습니다.");
                 }
 
-                p += 1;
+                position += 1;
             }
         }
 
         final var car = new Car();
 
         car.forward();
-        assertThat(car.p).isEqualTo(1);
+        assertThat(car.position).isEqualTo(1);
     }
 
     /**
@@ -93,10 +91,11 @@ public class ReadableCodeTest {
     void 코드를_통해_객체의_역할을_명확하게_드러내는_방법은_없을까() {
         // TODO: 객체의 역할을 명확하게 드러내는 코드를 작성해보세요.
         class Car {
+            private static final int MAX_POSITION = 5;
             private int position;
 
-            void forward() {
-                if (position > 5) {
+            void forwardIfLessThanMaxPosition() {
+                if (position > MAX_POSITION) {
                     throw new IllegalStateException("최대 5까지만 움직일 수 있습니다.");
                 }
 
@@ -106,7 +105,7 @@ public class ReadableCodeTest {
 
         final var car = new Car();
 
-        car.forward();
+        car.forwardIfLessThanMaxPosition();
         assertThat(car.position).isEqualTo(1);
     }
 
@@ -140,8 +139,12 @@ public class ReadableCodeTest {
 
             @Override
             public boolean equals(final Object o) {
-                if (this == o) return true;
-                if (o == null || getClass() != o.getClass()) return false;
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
                 final Position position = (Position) o;
                 return value == position.value;
             }
@@ -179,36 +182,35 @@ public class ReadableCodeTest {
             private String name;
             private int position;
 
+            void forward()  {
+                position++;
+            }
+
+            void backward()
+            {
+                position--;
+            }
+
             public String getName()
             {
                 return name;
             }
 
-            void Forward()  {
-                position += 1;
-            }
-
-            public int position() {
+            public int getPosition() {
                 return position;
-            }
-
-            void minusPosition()
-            {
-                position--;
             }
         }
         // @formatter:on
 
         final var car = new Car();
 
-        car.Forward();
-        assertThat(car.position()).isEqualTo(1);
+        car.forward();
+        assertThat(car.getPosition()).isEqualTo(1);
     }
 
     /**
-     * 일관된 코드 스타일로 리팩토링한 코드입니다.
-     * 코드를 이해하기 쉽게 만들기 위해 일관된 코드 스타일을 사용하는 것이 중요합니다.
-     * 코드를 읽는 사람이 코드를 이해하는데 혼동을 줄어들어 코드를 이해하는데 낭비되는 시간을 줄일 수 있습니다.
+     * 일관된 코드 스타일로 리팩토링한 코드입니다. 코드를 이해하기 쉽게 만들기 위해 일관된 코드 스타일을 사용하는 것이 중요합니다. 코드를 읽는 사람이 코드를 이해하는데 혼동을 줄어들어 코드를 이해하는데
+     * 낭비되는 시간을 줄일 수 있습니다.
      */
     @Test
     @DisplayName("일관된 코드 스타일로 리팩토링한 코드")
@@ -241,10 +243,8 @@ public class ReadableCodeTest {
     }
 
     /**
-     * 하나의 메서드가 많은 일을 하면 추상화 계층이 깊어지고, 코드를 이해하기 어려워집니다.
-     * 메서드가 한 가지 일만 하도록 작성하면 코드를 이해하기 쉬워집니다.
-     * 아래 우승 로또 번호와 나의 로또 번호를 비교하여 상금을 계산하는 코드는 한 가지 이상의 일을 하고 있습니다.
-     * 어떻게 추상화하여 메서드를 작게 만들 수 있을까?
+     * 하나의 메서드가 많은 일을 하면 추상화 계층이 깊어지고, 코드를 이해하기 어려워집니다. 메서드가 한 가지 일만 하도록 작성하면 코드를 이해하기 쉬워집니다. 아래 우승 로또 번호와 나의 로또 번호를
+     * 비교하여 상금을 계산하는 코드는 한 가지 이상의 일을 하고 있습니다. 어떻게 추상화하여 메서드를 작게 만들 수 있을까?
      */
     @Test
     @DisplayName("어떻게 추상화하여 메서드를 작게 만들 수 있을까?")
@@ -255,23 +255,24 @@ public class ReadableCodeTest {
                     final List<Integer> numbers,
                     final List<Integer> winningNumbers
             ) {
-                for (int number : numbers) {
-                    if (number < 1 || number > 45) {
-                        throw new IllegalArgumentException("로또 번호는 1부터 45까지의 숫자여야 합니다.");
-                    }
-                }
-                for (int winningNumber : winningNumbers) {
-                    if (winningNumber < 1 || winningNumber > 45) {
-                        throw new IllegalArgumentException("로또 번호는 1부터 45까지의 숫자여야 합니다.");
-                    }
-                }
-                if (new HashSet<>(numbers).size() != 6) {
-                    throw new IllegalArgumentException("로또 번호는 6개여야 합니다.");
-                }
-                if (new HashSet<>(winningNumbers).size() != 6) {
-                    throw new IllegalArgumentException("로또 번호는 6개여야 합니다.");
-                }
+                validateLottoNumbers(numbers);
+                validateLottoNumbers(winningNumbers);
 
+                final int matchCount = calculateMatchCount(numbers, winningNumbers);
+                return calculatePrize(matchCount);
+            }
+
+            private int calculatePrize(final int matchCount) {
+                return switch (matchCount) {
+                    case 6 -> 1_000_000_000;
+                    case 5 -> 50_000_000;
+                    case 4 -> 500_000;
+                    case 3 -> 5_000;
+                    default -> 0;
+                };
+            }
+
+            private int calculateMatchCount(final List<Integer> numbers, final List<Integer> winningNumbers) {
                 int count = 0;
                 for (int number : numbers) {
                     for (int winningNumber : winningNumbers) {
@@ -280,34 +281,56 @@ public class ReadableCodeTest {
                         }
                     }
                 }
+                return count;
+            }
 
-                return switch (count) {
-                    case 6 -> 1_000_000_000;
-                    case 5 -> 50_000_000;
-                    case 4 -> 500_000;
-                    case 3 -> 5_000;
-                    default -> 0;
-                };
+            private void validateLottoNumbers(final List<Integer> numbers) {
+                validateLottoNumbersRange(numbers);
+                validateLottoNumberCount(numbers);
+            }
+
+            private void validateLottoNumbersRange(final List<Integer> numbers) {
+                for (int number : numbers) {
+                    validateLottoNumberRange(number);
+                }
+            }
+
+            private void validateLottoNumberCount(final List<Integer> numbers) {
+                if (new HashSet<>(numbers).size() != 6) {
+                    throw new IllegalArgumentException("로또 번호는 6개여야 합니다.");
+                }
+            }
+
+            private void validateLottoNumberRange(final int number) {
+                if (number < 1 || number > 45) {
+                    throw new IllegalArgumentException("로또 번호는 1부터 45까지의 숫자여야 합니다.");
+                }
             }
         }
 
         final var lottoGame = new LottoGame();
 
         assertAll(
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 6))).isEqualTo(1_000_000_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 7))).isEqualTo(50_000_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 7, 8))).isEqualTo(500_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 7, 8, 9))).isEqualTo(5_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 7, 8, 9, 10))).isEqualTo(0)
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 6))).isEqualTo(
+                        1_000_000_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 7))).isEqualTo(
+                        50_000_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 7, 8))).isEqualTo(
+                        500_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 7, 8, 9))).isEqualTo(
+                        5_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 7, 8, 9, 10))).isEqualTo(0)
         );
     }
 
     /**
-     * 메서드를 작게 만들어 추상화한 코드입니다.
-     * 메서드가 한 가지 일만 하도록 작성하면 코드를 이해하기 쉬워집니다.
-     * 추상화 수준을 적절하게 유지하면 유지보수성을 높일 수 있습니다.
-     * 메서드를 작게 만들어 추상화하다 보면 메서드의 역할이 명확해지지만, 객체의 역할은 아직 명확하지 않습니다.
-     * 어떻게 추상화하여 객체의 역할을 명확하게 드러낼 수 있을까?
+     * 메서드를 작게 만들어 추상화한 코드입니다. 메서드가 한 가지 일만 하도록 작성하면 코드를 이해하기 쉬워집니다. 추상화 수준을 적절하게 유지하면 유지보수성을 높일 수 있습니다. 메서드를 작게 만들어
+     * 추상화하다 보면 메서드의 역할이 명확해지지만, 객체의 역할은 아직 명확하지 않습니다. 어떻게 추상화하여 객체의 역할을 명확하게 드러낼 수 있을까?
      */
     @Test
     @DisplayName("어떻게 추상화하여 객체의 역할을 명확하게 드러낼 수 있을까?")
@@ -370,18 +393,26 @@ public class ReadableCodeTest {
         final var lottoGame = new LottoGame();
 
         assertAll(
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 6))).isEqualTo(1_000_000_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 7))).isEqualTo(50_000_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 7, 8))).isEqualTo(500_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 7, 8, 9))).isEqualTo(5_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 7, 8, 9, 10))).isEqualTo(0)
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 6))).isEqualTo(
+                        1_000_000_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 7))).isEqualTo(
+                        50_000_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 7, 8))).isEqualTo(
+                        500_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 7, 8, 9))).isEqualTo(
+                        5_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 7, 8, 9, 10))).isEqualTo(0)
         );
     }
 
     /**
-     * 객체의 역할을 명확하게 드러낸 코드입니다.
-     * 객체가 자기 자신의 역할을 명확하게 드러내면 코드를 읽는 사람이 코드의 의도를 파악하기 쉬워집니다.
-     * 코드를 읽는 사람이 코드의 의도를 파악하기 쉽게 만들기 위해 객체의 역할을 명확하게 드러내는 것이 중요합니다.
+     * 객체의 역할을 명확하게 드러낸 코드입니다. 객체가 자기 자신의 역할을 명확하게 드러내면 코드를 읽는 사람이 코드의 의도를 파악하기 쉬워집니다. 코드를 읽는 사람이 코드의 의도를 파악하기 쉽게 만들기 위해
+     * 객체의 역할을 명확하게 드러내는 것이 중요합니다.
      */
     @Test
     @DisplayName("객체의 역할을 명확하게 드러낸 코드")
@@ -398,8 +429,12 @@ public class ReadableCodeTest {
 
             @Override
             public boolean equals(Object o) {
-                if (this == o) return true;
-                if (o == null || getClass() != o.getClass()) return false;
+                if (this == o) {
+                    return true;
+                }
+                if (o == null || getClass() != o.getClass()) {
+                    return false;
+                }
                 LottoNumber that = (LottoNumber) o;
                 return value == that.value;
             }
@@ -489,20 +524,27 @@ public class ReadableCodeTest {
         final var lottoGame = new LottoGame();
 
         assertAll(
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 6))).isEqualTo(1_000_000_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 7))).isEqualTo(50_000_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 7, 8))).isEqualTo(500_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 7, 8, 9))).isEqualTo(5_000),
-                () -> assertThat(lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 7, 8, 9, 10))).isEqualTo(0)
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 6))).isEqualTo(
+                        1_000_000_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 5, 7))).isEqualTo(
+                        50_000_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 4, 7, 8))).isEqualTo(
+                        500_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 3, 7, 8, 9))).isEqualTo(
+                        5_000),
+                () -> assertThat(
+                        lottoGame.calculatePrize(List.of(1, 2, 3, 4, 5, 6), List.of(1, 2, 7, 8, 9, 10))).isEqualTo(0)
         );
     }
 
     /**
-     * 메서드의 이름을 잘 지어도 매개변수가 무엇이고 어떤 역할을 하는지 알기 어렵다면 의미를 전달하기 어렵습니다.
-     * 매개변수 또한 의미를 전달할 수 있도록 작성하는 것이 중요합니다.
-     * 아래 코드는 좋아하는 음식과 싫어하는 음식을 가지고 있는 Crew 객체를 생성하는 코드입니다.
-     * 클래스 내에 이름을 잘 지어두었다면 의미를 전달할 수 있지만, 매번 해당 클래스로 가서 이름을 확인하는 방법은 번거롭습니다.
-     * 어떻게 매개변수의 의미를 전달할 수 있을까?
+     * 메서드의 이름을 잘 지어도 매개변수가 무엇이고 어떤 역할을 하는지 알기 어렵다면 의미를 전달하기 어렵습니다. 매개변수 또한 의미를 전달할 수 있도록 작성하는 것이 중요합니다. 아래 코드는 좋아하는 음식과
+     * 싫어하는 음식을 가지고 있는 Crew 객체를 생성하는 코드입니다. 클래스 내에 이름을 잘 지어두었다면 의미를 전달할 수 있지만, 매번 해당 클래스로 가서 이름을 확인하는 방법은 번거롭습니다. 어떻게
+     * 매개변수의 의미를 전달할 수 있을까?
      */
     @Test
     @DisplayName("어떻게 매개변수의 의미를 전달할 수 있을까?")
@@ -518,9 +560,8 @@ public class ReadableCodeTest {
     }
 
     /**
-     * 주석으로 매개변수의 의미를 전달할 수 있는 코드입니다.
-     * 하지만 주석을 신경쓰지 않고 코드를 변경하거나, 처음부터 주석과 다른 코드를 작성했다면 오히려 오해할 수 있는 코드가 될 수 있습니다.
-     * 주석을 사용하지 않고 매개변수의 의미를 전달할 수 있는 방법은 없을까?
+     * 주석으로 매개변수의 의미를 전달할 수 있는 코드입니다. 하지만 주석을 신경쓰지 않고 코드를 변경하거나, 처음부터 주석과 다른 코드를 작성했다면 오히려 오해할 수 있는 코드가 될 수 있습니다. 주석을
+     * 사용하지 않고 매개변수의 의미를 전달할 수 있는 방법은 없을까?
      */
     @Test
     @DisplayName("주석을 사용하지 않고 매개변수의 의미를 전달할 수 있는 방법은 없을까?")
@@ -544,10 +585,8 @@ public class ReadableCodeTest {
     }
 
     /**
-     * 빌더를 통해 매개변수의 의미를 전달할 수 있는 코드입니다.
-     * 빌더를 사용하면 매개변수의 의미를 전달할 수 있고, 빌더를 통해 객체를 생성할 때 매개변수의 순서를 신경쓰지 않아도 됩니다.
-     * 매개변수가 많아지면 어떤 값을 설정했는지 확인이 어렵거나 어떤 매개변수끼리 의미가 있는지 확인이 어려워질 수 있습니다.
-     * 매개변수를 묶어 의미를 전달할 수 있는 방법은 없을까?
+     * 빌더를 통해 매개변수의 의미를 전달할 수 있는 코드입니다. 빌더를 사용하면 매개변수의 의미를 전달할 수 있고, 빌더를 통해 객체를 생성할 때 매개변수의 순서를 신경쓰지 않아도 됩니다. 매개변수가 많아지면
+     * 어떤 값을 설정했는지 확인이 어렵거나 어떤 매개변수끼리 의미가 있는지 확인이 어려워질 수 있습니다. 매개변수를 묶어 의미를 전달할 수 있는 방법은 없을까?
      */
     @Test
     @DisplayName("매개변수를 묶어 의미를 전달할 수 있는 방법은 없을까?")
@@ -595,11 +634,9 @@ public class ReadableCodeTest {
     }
 
     /**
-     * 매개변수를 묶어 의미를 전달할 수 있는 코드입니다.
-     * 의미가 동일한 매개변수를 묶어 별도 클래스로 분리하여 객체의 역할을 명확하게 드러내면 코드를 읽는 사람이 코드의 의도를 파악하기 쉬워집니다.
-     * 원리는 위에서 학습한 메서드 분리, 추상화, 객체의 역할을 명확하게 드러내는 방법과 동일합니다.
-     * 의미가 명확해진 장점은 있지만, 객체가 많아지면 유지보수성이 떨어질 수 있습니다.
-     * 정답은 없습니다. 적절한 추상화 수준을 유지하는 것이 중요합니다.
+     * 매개변수를 묶어 의미를 전달할 수 있는 코드입니다. 의미가 동일한 매개변수를 묶어 별도 클래스로 분리하여 객체의 역할을 명확하게 드러내면 코드를 읽는 사람이 코드의 의도를 파악하기 쉬워집니다. 원리는
+     * 위에서 학습한 메서드 분리, 추상화, 객체의 역할을 명확하게 드러내는 방법과 동일합니다. 의미가 명확해진 장점은 있지만, 객체가 많아지면 유지보수성이 떨어질 수 있습니다. 정답은 없습니다. 적절한 추상화
+     * 수준을 유지하는 것이 중요합니다.
      */
     @Test
     @DisplayName("의미가 명확해진 장점은 있지만, 객체가 많아지면 유지보수성이 떨어질 수 있으니 적절한 추상화 수준을 유지하는 것이 중요합니다")
@@ -673,10 +710,8 @@ public class ReadableCodeTest {
     }
 
     /**
-     * 기능을 구현하다 보면 이미 누군가가 구현한 기능을 재사용하고 싶을 때가 있습니다.
-     * 대표적으로 자바에서 제공하는 Collection API를 사용하는 것입니다.
-     * Collection API를 사용하면 코드를 재사용할 수 있고, 코드를 읽는 사람이 코드의 의도를 파악하기 쉬워집니다.
-     * Collection API를 사용하여 코드를 재사용하고 의도를 파악하기 쉽게 만들 수 없을까?
+     * 를기능을 구현하다 보면 이미 누군가가 구현한 기능을 재사용하고 싶을 때가 있습니다. 대표적으로 자바에서 제공하는 Collection API를 사용하는 것입니다. Collection API를 사용하면 코드
+     * 재사용할 수 있고, 코드를 읽는 사람이 코드의 의도를 파악하기 쉬워집니다. Collection API를 사용하여 코드를 재사용하고 의도를 파악하기 쉽게 만들 수 없을까?
      */
     @Test
     @DisplayName("Collection API를 사용하여 코드를 재사용하고 의도를 파악하기 쉽게 만들 수 없을까?")
@@ -686,12 +721,9 @@ public class ReadableCodeTest {
 
             public Menu(final List<String> menuItems) {
                 // TODO: Collection API를 사용하여 코드를 재사용하고 의도를 파악하기 쉽게 만들어보세요.
-                for (int i = 0; i < menuItems.size(); i++) {
-                    for (int j = 0; j < i; j++) {
-                        if (menuItems.get(i).equals(menuItems.get(j))) {
-                            throw new IllegalArgumentException("중복된 메뉴가 있습니다.");
-                        }
-                    }
+
+                if(new HashSet<>(menuItems).size() != menuItems.size()){
+                    throw new IllegalArgumentException("중복된 메뉴가 있습니다.");
                 }
 
                 this.menuItems = menuItems;
@@ -704,10 +736,8 @@ public class ReadableCodeTest {
     }
 
     /**
-     * Collection의 distinct를 사용하여 코드를 재사용하고 의도를 파악하기 쉽게 만든 코드입니다.
-     * Collection API를 사용하면 코드를 재사용할 수 있고, 코드를 읽는 사람이 코드의 의도를 파악하기 쉬워집니다.
-     * 위 객체 분리에서 학습한 것처럼 메서드로 나타내는 것 보다 객체 자체로 나타내는 것이 더 좋은 방법일 수 있습니다.
-     * 객체 자체로 의미를 전달할 수 있는 방법은 없을까?
+     * Collection의 distinct를 사용하여 코드를 재사용하고 의도를 파악하기 쉽게 만든 코드입니다. Collection API를 사용하면 코드를 재사용할 수 있고, 코드를 읽는 사람이 코드의 의도를
+     * 파악하기 쉬워집니다. 위 객체 분리에서 학습한 것처럼 메서드로 나타내는 것 보다 객체 자체로 나타내는 것이 더 좋은 방법일 수 있습니다. 객체 자체로 의미를 전달할 수 있는 방법은 없을까?
      */
     @Test
     @DisplayName("객체 자체로 의미를 전달할 수 있는 방법은 없을까?")
@@ -731,10 +761,8 @@ public class ReadableCodeTest {
     }
 
     /**
-     * 객체 자체로 의미를 전달할 수 있는 코드입니다.
-     * 자료구조를 활용하면 코드를 읽는 사람이 코드의 의도를 파악하기 쉬워집니다.
-     * Set 자료구조는 중복을 허용하지 않기 때문에 해당 객체를 생성하는 시점에 중복이 없는 것을 보장할 수 있습니다.
-     * 적절한 API를 사용하면 견고한 코드를 작성할 수 있습니다.
+     * 객체 자체로 의미를 전달할 수 있는 코드입니다. 자료구조를 활용하면 코드를 읽는 사람이 코드의 의도를 파악하기 쉬워집니다. Set 자료구조는 중복을 허용하지 않기 때문에 해당 객체를 생성하는 시점에
+     * 중복이 없는 것을 보장할 수 있습니다. 적절한 API를 사용하면 견고한 코드를 작성할 수 있습니다.
      */
     @Test
     @DisplayName("적절한 API를 사용하면 견고한 코드를 작성할 수 있습니다")
@@ -756,8 +784,7 @@ public class ReadableCodeTest {
     }
 
     /**
-     * 적절한 API를 사용하는 것이 견고한 코드를 작성할 수 있다는 사실을 알게 되었습니다.
-     * 그렇다고 너무 API를 사용하는 것에 매몰되면 부작용이 발생할 수 있습니다.
+     * 적절한 API를 사용하는 것이 견고한 코드를 작성할 수 있다는 사실을 알게 되었습니다. 그렇다고 너무 API를 사용하는 것에 매몰되면 부작용이 발생할 수 있습니다.
      */
     @Test
     @DisplayName("API에 매몰되어 과하게 사용하면 생길 수 있는 문제")
@@ -771,12 +798,7 @@ public class ReadableCodeTest {
 
             public int getPrice(final String menuName) {
                 // TODO: API에 매몰되어 과하게 사용하여 생긴 코드입니다. 간단한 코드로 리팩토링해보세요.
-                return menu.entrySet()
-                        .stream()
-                        .filter(e -> e.getKey().equals(menuName))
-                        .map(Map.Entry::getValue)
-                        .findFirst()
-                        .orElse(0);
+                return menu.getOrDefault(menuName, 0);
             }
         }
         final var menu = new Menu(Map.of(

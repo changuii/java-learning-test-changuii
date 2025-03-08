@@ -14,19 +14,16 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 
 /**
- * 좋은 코드의 기준은 사람마다 다르지만 대부분의 사람들이 동의하는 몇 가지 기준이 있습니다.
- * 그 기준 중 유지보수성과 확장성은 매우 중요한 기준입니다.
- * 예측 가능한 코드는 유지보수성을 높이고 버그를 줄이는데 도움을 줍니다.
- * 유지보수성과 확장성을 위한 예측 가능한 코드를 작성하는 방법을 알아봅니다.
+ * 좋은 코드의 기준은 사람마다 다르지만 대부분의 사람들이 동의하는 몇 가지 기준이 있습니다. 그 기준 중 유지보수성과 확장성은 매우 중요한 기준입니다. 예측 가능한 코드는 유지보수성을 높이고 버그를 줄이는데
+ * 도움을 줍니다. 유지보수성과 확장성을 위한 예측 가능한 코드를 작성하는 방법을 알아봅니다.
  */
 public class PredictableCodeTest {
     record Car(int position) {
     }
 
     /**
-     * 아래 코드는 자동차 경주에서 평균 위치를 계산하는 기능입니다.
-     * 게임 참여자가 없을 경우 -1을 반환하여 처리하면 해당 기능을 사용하는 개발자들은 매번 -1을 체크해야 하고, 이는 실수하기 좋은 코드가 됩니다.
-     * 어떻게 매번 -1를 체크하지 않도록 할 수 있을까?
+     * 아래 코드는 자동차 경주에서 평균 위치를 계산하는 기능입니다. 게임 참여자가 없을 경우 -1을 반환하여 처리하면 해당 기능을 사용하는 개발자들은 매번 -1을 체크해야 하고, 이는 실수하기 좋은 코드가
+     * 됩니다. 어떻게 매번 -1를 체크하지 않도록 할 수 있을까?
      */
     @Test
     @DisplayName("어떻게 매번 -1를 체크하지 않도록 할 수 있을까?")
@@ -45,12 +42,17 @@ public class PredictableCodeTest {
                 this.participants = participants;
             }
 
-            int averagePosition() {
+            Integer averagePosition() {
                 // Note: 매직값은 버그를 유발할 수 있다.
-                return (int) participants.stream()
+                final var value = participants.stream()
                         .mapToInt(Car::position)
-                        .average()
-                        .orElse(NO_PARTICIPANT);
+                        .average();
+
+                if (value.isEmpty()) {
+                    return null;
+                }
+
+                return (int) value.getAsDouble();
             }
         }
 
@@ -58,14 +60,12 @@ public class PredictableCodeTest {
 
         final var averagePosition = racingGame.averagePosition();
 
-        assertThat(averagePosition).isEqualTo(RacingGame.NO_PARTICIPANT);
+        assertThat(averagePosition).isNull();
     }
 
     /**
-     * null을 통해 의도를 전달하는 방법입니다.
-     * null을 사용하면 코드를 읽는 사람이 해당 변수가 null일 수 있다는 것을 알 수 있습니다.
-     * 하지만 null을 사용하면 NullPointerException이 발생할 수 있고, null로 인해 생길 수 있는 부작용이 발생할 수 있습니다.
-     * null을 사용하지 않고 의도를 전달하는 방법은 무엇일까?
+     * null을 통해 의도를 전달하는 방법입니다. null을 사용하면 코드를 읽는 사람이 해당 변수가 null일 수 있다는 것을 알 수 있습니다. 하지만 null을 사용하면
+     * NullPointerException이 발생할 수 있고, null로 인해 생길 수 있는 부작용이 발생할 수 있습니다. null을 사용하지 않고 의도를 전달하는 방법은 무엇일까?
      */
     @Test
     @DisplayName("null을 사용하지 않고 의도를 전달하는 방법은 무엇일까?")
@@ -82,16 +82,16 @@ public class PredictableCodeTest {
                 this.participants = participants;
             }
 
-            Integer averagePosition() {
+            Optional<Integer> averagePosition() {
                 final OptionalDouble average = participants.stream()
                         .mapToInt(Car::position)
                         .average();
 
                 if (average.isEmpty()) {
-                    // Note: null은 버그를 유발할 수 있다.
-                    return null;
+
+                    return Optional.empty();
                 }
-                return (int) average.getAsDouble();
+                return Optional.of((int) average.getAsDouble());
             }
         }
 
@@ -99,15 +99,13 @@ public class PredictableCodeTest {
 
         final var averagePosition = racingGame.averagePosition();
 
-        assertThat(averagePosition).isNull();
+        assertThat(averagePosition).isEmpty();
     }
 
     /**
-     * Optional을 통해 의도를 전달하는 방법입니다.
-     * Optional을 사용하면 코드를 읽는 사람이 해당 변수가 비어있을 수 있다는 것을 알 수 있습니다.
-     * 지금의 구조는 참여자가 없다는 사실을 전달할 수 있지만, 그 처리를 외부에 위임하고 있습니다.
-     * 만약 참여자가 없다는 사실을 처리하는 코드가 여러군데에 중복되어 있다면, 이는 유지보수성을 떨어뜨리는 코드가 됩니다.
-     * 어떻게 참여자가 없는 상황을 처리하는 코드를 중복하지 않고 처리할 수 있을까?
+     * Optional을 통해 의도를 전달하는 방법입니다. Optional을 사용하면 코드를 읽는 사람이 해당 변수가 비어있을 수 있다는 것을 알 수 있습니다. 지금의 구조는 참여자가 없다는 사실을 전달할 수
+     * 있지만, 그 처리를 외부에 위임하고 있습니다. 만약 참여자가 없다는 사실을 처리하는 코드가 여러군데에 중복되어 있다면, 이는 유지보수성을 떨어뜨리는 코드가 됩니다. 어떻게 참여자가 없는 상황을 처리하는
+     * 코드를 중복하지 않고 처리할 수 있을까?
      */
     @Test
     @DisplayName("어떻게 참여자가 없는 상황을 처리하는 코드를 중복하지 않고 처리할 수 있을까?")
@@ -125,30 +123,22 @@ public class PredictableCodeTest {
             }
 
             // Note: Optional를 사용하면 외부에 처리를 위임하게 되고, 응집도가 떨어질 수 있다.
-            Optional<Integer> averagePosition() {
+            int averagePosition() {
                 final OptionalDouble average = participants.stream()
                         .mapToInt(Car::position)
                         .average();
 
-                if (average.isEmpty()) {
-                    return Optional.empty();
-                }
-                return Optional.of((int) average.getAsDouble());
+                return (int) average.orElseThrow(IllegalArgumentException::new);
             }
         }
 
         final var racingGame = new RacingGame();
-
-        final var averagePosition = racingGame.averagePosition();
-
-        assertThat(averagePosition).isEmpty();
+        assertThatThrownBy(() -> racingGame.averagePosition());
     }
 
     /**
-     * 예외를 발생하여 명시적으로 처리하는 방법입니다.
-     * 논리적으로 참여자가 없다는 사실을 처리하는 코드를 중복하지 않고 처리할 수 있습니다.
-     * 설계에 따라 외부에서 처리하는 것이 적합할 경우 Optional을 사용할 수 있지만, 설계에 따라 예외를 발생하는 것이 적합할 수 있습니다.
-     * 정답은 없습니다. 상황에 따라 적절한 방법을 선택해야 합니다.
+     * 예외를 발생하여 명시적으로 처리하는 방법입니다. 논리적으로 참여자가 없다는 사실을 처리하는 코드를 중복하지 않고 처리할 수 있습니다. 설계에 따라 외부에서 처리하는 것이 적합할 경우 Optional을
+     * 사용할 수 있지만, 설계에 따라 예외를 발생하는 것이 적합할 수 있습니다. 정답은 없습니다. 상황에 따라 적절한 방법을 선택해야 합니다.
      */
     @Test
     @DisplayName("예외를 발생하여 명시적으로 처리하는 방법입니다.")
@@ -186,9 +176,8 @@ public class PredictableCodeTest {
     }
 
     /**
-     * 아래 코드는 4 이상의 파워가 넘어왔을 때 자동차를 움직이는 기능입니다.
-     * 자동차의 위치를 조회하는 것 또한 해당 메서드를 통해 조회하고 있습니다.
-     * 자동차 이동과 조회를 같이 할 경우 어떠한 문제가 있을지 고민 후 개선해보세요.
+     * 아래 코드는 4 이상의 파워가 넘어왔을 때 자동차를 움직이는 기능입니다. 자동차의 위치를 조회하는 것 또한 해당 메서드를 통해 조회하고 있습니다. 자동차 이동과 조회를 같이 할 경우 어떠한 문제가 있을지
+     * 고민 후 개선해보세요.
      */
     @Test
     @DisplayName("자동차 이동과 조회를 같이 할 경우 어떠한 문제가 있을지 고민 후 개선한다.")
@@ -197,26 +186,29 @@ public class PredictableCodeTest {
             private int position;
 
             // TODO: 자동차 이동과 조회를 같이 할 경우 어떠한 문제가 있을지 고민 후 개선해보세요.
-            int move(final int power) {
+            void move(final int power) {
                 if (power <= 4) {
-                    return position;
+                    return;
                 }
 
-                return ++position;
+                ++position;
+            }
+
+            int getPosition() {
+                return position;
             }
         }
 
         final var car = new Car();
 
-        final var position = car.move(5);
+        car.move(5);
 
-        assertThat(position).isEqualTo(1);
+        assertThat(car.getPosition()).isEqualTo(1);
     }
 
     /**
-     * 아래 코드는 자동차가 최대 5칸을 움직일 수 있는 코드입니다.
-     * 5칸에 위치하였을 때 더 이동하려고 하면 더 이상 움직이지 않고 위치를 유지하고 있습니다.
-     * 아래 자동차가 최대 위치에서 움직이지 않고 유지하는 코드는 어떠한 문제가 있을지 고민 후 개선해보세요.
+     * 아래 코드는 자동차가 최대 5칸을 움직일 수 있는 코드입니다. 5칸에 위치하였을 때 더 이동하려고 하면 더 이상 움직이지 않고 위치를 유지하고 있습니다. 아래 자동차가 최대 위치에서 움직이지 않고
+     * 유지하는 코드는 어떠한 문제가 있을지 고민 후 개선해보세요.
      */
     @Test
     @DisplayName("자동차가 최대 위치에서 움직이지 않고 유지하는 코드는 어떠한 문제가 있을지 고민 후 개선한다.")
@@ -229,12 +221,13 @@ public class PredictableCodeTest {
             }
 
             // TODO: 자동차가 최대 위치에서 움직이지 않고 유지하는 코드는 어떠한 문제가 있을지 고민 후 개선해보세요.
+            // TODO 3/8/25 14:03: 중요한 로직을 무시하는 것은 버그를 유발할 수 있음
             void move(final int power) {
                 if (power <= 4) {
                     return;
                 }
                 if (position >= 5) {
-                    return;
+                    throw new IllegalArgumentException();
                 }
 
                 position++;
@@ -246,17 +239,12 @@ public class PredictableCodeTest {
         }
 
         final var car = new Car(5);
-
-        car.move(5);
-
-        assertThat(car.getPosition()).isEqualTo(5);
+        assertThatThrownBy(() -> car.move(5));
     }
 
     /**
-     * 더 이상 움직일 수 없을 때 예외를 발생하여 명시적으로 처리하는 방법입니다.
-     * 중요한 동작을 무시하는 것은 버그를 유발할 수 있습니다.
-     * 하지만 아직 파워가 4보다 작을 때는 무시하고 있습니다.
-     * 파워가 4보다 작을 때 무시하는 코드는 어떠한 문제가 있을지 고민 후 개선해보세요.
+     * 더 이상 움직일 수 없을 때 예외를 발생하여 명시적으로 처리하는 방법입니다. 중요한 동작을 무시하는 것은 버그를 유발할 수 있습니다. 하지만 아직 파워가 4보다 작을 때는 무시하고 있습니다. 파워가
+     * 4보다 작을 때 무시하는 코드는 어떠한 문제가 있을지 고민 후 개선해보세요.
      */
     @Test
     @DisplayName("파워가 4보다 작을 때 무시하는 코드는 어떠한 문제가 있을지 고민 후 개선한다.")
@@ -270,8 +258,9 @@ public class PredictableCodeTest {
 
             void move(final int power) {
                 // TODO: 파워가 4보다 작을 때 무시하는 코드는 어떠한 문제가 있을지 고민 후 개선해보세요.
+                // TODO 3/8/25 14:04: 예외를 발생시켜 외부로 알린다.
                 if (power <= 4) {
-                    return;
+                    throw new IllegalArgumentException();
                 }
                 if (position >= 5) {
                     // Note: 중요한 동작을 무시하는 것은 버그를 유발할 수 있다.
@@ -284,6 +273,9 @@ public class PredictableCodeTest {
 
         final var car = new Car(5);
 
+        assertThatThrownBy(() -> car.move(4))
+                .isInstanceOf(IllegalArgumentException.class);
+
         assertThatThrownBy(() -> {
             car.move(5);
         }).isInstanceOf(IllegalStateException.class)
@@ -291,19 +283,25 @@ public class PredictableCodeTest {
     }
 
     /**
-     * 아래 코드는 입력된 문자열 명령에 따라 동작하는 코드입니다.
-     * 문자열로 명령을 받는 것은 어떠한 문제가 있을지 고민 후 개선해보세요.
+     * 아래 코드는 입력된 문자열 명령에 따라 동작하는 코드입니다. 문자열로 명령을 받는 것은 어떠한 문제가 있을지 고민 후 개선해보세요.
      */
     @Test
     @DisplayName("문자열로 명령을 받는 것은 어떠한 문제가 있을지 고민 후 개선한다.")
     void 문자열로_명령을_받는_것은_어떠한_문제가_있을지_고민_후_개선한다() {
+
+        // TODO 3/8/25 14:07: enum을 추가하여 해결
+        enum Command{
+            PLUS, MINUS;
+        }
+
         class Calculator {
-            private static final String PLUS = "PLUS";
-            private static final String MINUS = "MINUS";
+            private static final Command PLUS = Command.PLUS;
+            private static final Command MINUS = Command.MINUS;
 
             // TODO: 문자열로 명령을 받는 것은 어떠한 문제가 있을지 고민 후 개선해보세요.
+            // TODO 3/8/25 14:05: PLUS, MINUS라는 문자열이 입력되더라도 실행되는 문제가 발생, 타입 안정성 문제가 존재.
             public static int calculate(
-                    final String command,
+                    final Command command,
                     final int left,
                     final int right
             ) {
@@ -319,17 +317,15 @@ public class PredictableCodeTest {
         }
 
         assertAll(
-                () -> assertThat(Calculator.calculate("PLUS", 1, 2)).isEqualTo(3),
-                () -> assertThat(Calculator.calculate("MINUS", 1, 2)).isEqualTo(-1)
+                () -> assertThat(Calculator.calculate(Command.PLUS, 1, 2)).isEqualTo(3),
+                () -> assertThat(Calculator.calculate(Command.MINUS, 1, 2)).isEqualTo(-1)
         );
     }
 
     /**
-     * 명령을 문자열에서 열거형으로 변경하여 명시적으로 처리하는 방법입니다.
-     * 문자열 상수의 경우 타입 안정성이 보장되지 않아 버그를 유발할 수 있습니다.
-     * 열거형으로 변경하면 타입 안정성이 보장되어 버그를 줄일 수 있습니다.
-     * 하지만 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓친다면 버그를 유발할 수 있습니다.
-     * 어떻게 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓치지 않을 수 있을까?
+     * 명령을 문자열에서 열거형으로 변경하여 명시적으로 처리하는 방법입니다. 문자열 상수의 경우 타입 안정성이 보장되지 않아 버그를 유발할 수 있습니다. 열거형으로 변경하면 타입 안정성이 보장되어 버그를 줄일
+     * 수 있습니다. 하지만 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓친다면 버그를 유발할 수 있습니다. 어떻게 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓치지 않을 수
+     * 있을까?
      */
     @Test
     @DisplayName("어떻게 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓치지 않을 수 있을까?")
@@ -359,18 +355,21 @@ public class PredictableCodeTest {
         }
 
         // TODO: 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓치지 않을 수 있는 방법을 고민 후 개선해보세요.
+        // TODO 3/8/25 14:12: 테스트를 작성해둬 놓치지 않게 한다.
 
         assertAll(
                 () -> assertThat(Calculator.calculate(Command.PLUS, 1, 2)).isEqualTo(3),
                 () -> assertThat(Calculator.calculate(Command.MINUS, 1, 2)).isEqualTo(-1)
         );
+
+        assertThatThrownBy(() -> Calculator.calculate(Command.MULTIPLY, 1, 2))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
 
     /**
-     * 테스트 코드를 추가하여 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓치지 않는 방법입니다.
-     * 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓치지 않으려면 테스트 코드를 작성하여 해당 명령을 처리하는 코드를 놓치지 않도록 해야 합니다.
-     * 하지만 테스트를 직접 실행시키기 전까지 해당 명령을 처리하는 코드를 놓칠 수 있습니다.
-     * 어떻게 더 빠른 시점에 해당 명령을 처리하는 코드를 놓치지 않을 수 있을까?
+     *      * 테스트 코드를 추가하여 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓치지 않는 방법입니다. 새로운 열거형이 추가되었을 때 해당 명령을 처리하는 코드를 놓치지 않으려면 테스트 코드를
+     * 작성하여 해당 명령을 처리하는 코드를 놓치지 않도록 해야 합니다. 하지만 테스트를 직접 실행시키기 전까지 해당 명령을 처리하는 코드를 놓칠 수 있습니다. 어떻게 더 빠른 시점에 해당 명령을 처리하는
+     * 코드를 놓치지 않을 수 있을까?
      */
     @Test
     @DisplayName("어떻게 더 빠른 시점에 해당 명령을 처리하는 코드를 놓치지 않을 수 있을까?")
@@ -387,18 +386,16 @@ public class PredictableCodeTest {
                     final int left,
                     final int right
             ) {
-                if (command == Command.PLUS) {
-                    return left + right;
-                }
-                if (command == Command.MINUS) {
-                    return left - right;
-                }
-
-                throw new UnsupportedOperationException("지원하지 않는 명령입니다.");
+                return switch (command){
+                    case PLUS -> left + right;
+                    case MINUS -> left + right;
+                    case MULTIPLY -> left * right;
+                };
             }
         }
 
         // TODO: 더 빠른 시점에 해당 명령을 처리하는 코드를 놓치지 않을 수 있는 방법을 고민 후 개선해보세요.
+        // TODO 3/8/25 14:13: switch문을 사용하면, 모든 열거형을 처리하지 않으면 컴파일 시점에 에러가 발생한다.
 
         for (final Command command : Command.values()) {
             // Note: 런타임 시점에 해당 명령을 처리하는 코드를 놓치지 않을 수 있다.
@@ -409,9 +406,8 @@ public class PredictableCodeTest {
     }
 
     /**
-     * switch 문을 사용하여 명령을 처리하는 방법입니다.
-     * 놓친 코드를 찾는 시점을 런타임이 아닌 컴파일 타임으로 변경하여 해당 명령을 처리하는 코드를 놓치지 않을 수 있습니다.
-     * 코드를 작성할 때 최대한 런타임 시점에 발생할 수 있는 오류를 컴파일 타임으로 발생하도록 작성하는 것이 좋습니다.
+     * switch 문을 사용하여 명령을 처리하는 방법입니다. 놓친 코드를 찾는 시점을 런타임이 아닌 컴파일 타임으로 변경하여 해당 명령을 처리하는 코드를 놓치지 않을 수 있습니다. 코드를 작성할 때 최대한
+     * 런타임 시점에 발생할 수 있는 오류를 컴파일 타임으로 발생하도록 작성하는 것이 좋습니다.
      */
     @Test
     @DisplayName("코드를 작성할 때 최대한 런타임 시점에 발생할 수 있는 오류를 컴파일 타임으로 발생하도록 작성하는 것이 좋다.")
@@ -444,10 +440,8 @@ public class PredictableCodeTest {
     }
 
     /**
-     * 추가로 열거형도 객체로 바라보는 방법도 있습니다.
-     * 이러한 방법은 열거형에 역할을 부여하여 열거형이 해당 역할을 수행하도록 하는 방법입니다.
-     * 지금과 같이 간단한 코드에선 더욱 응집도가 높은 코드가 될 수 있지만, 열거형을 상수와 객체 역할을 모두 수행하도록 하는 것은 적절하지 않을 수 있습니다.
-     * 열거형이 해당 역할을 수행하도록 하는 것이 적합한지 충분한 고민을 하고 사용해야 합니다.
+     * 추가로 열거형도 객체로 바라보는 방법도 있습니다. 이러한 방법은 열거형에 역할을 부여하여 열거형이 해당 역할을 수행하도록 하는 방법입니다. 지금과 같이 간단한 코드에선 더욱 응집도가 높은 코드가 될 수
+     * 있지만, 열거형을 상수와 객체 역할을 모두 수행하도록 하는 것은 적절하지 않을 수 있습니다. 열거형이 해당 역할을 수행하도록 하는 것이 적합한지 충분한 고민을 하고 사용해야 합니다.
      */
     @Test
     @DisplayName("열거형이 해당 역할을 수행하도록 하는 것이 적합한지 충분한 고민을 하고 사용해야 합니다.")
